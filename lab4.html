@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Weight Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 10px 0;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Fish Weight Prediction</h1>
+
+    <div class="form-container">
+        <form id="prediction-form" enctype="multipart/form-data">
+            <label for="file">Upload a CSV file with fish data:</label>
+            <input type="file" id="file" name="file" accept=".csv" required>
+            <button type="submit">Upload and Predict</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById("prediction-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const fileInput = document.getElementById("file");
+            formData.append("file", fileInput.files[0]);
+
+            let response = await fetch("/predict", {
+                method: "POST",
+                body: formData
+            });
+
+            let result = await response.json();
+
+            if (result.error) {
+                document.getElementById("result").innerHTML = `<p style="color: red;">Error: ${result.error}</p>`;
+            } else {
+                let output = `<p><strong>Predictions:</strong> ${result.predictions.join(", ")}</p>`;
+
+                if (result.mae !== null) {
+                    output += `<p><strong>Mean Absolute Error (MAE):</strong> ${result.mae}</p>`;
+                    output += `<p><strong>Mean Squared Error (MSE):</strong> ${result.mse}</p>`;
+                    output += `<p><strong>R² Score:</strong> ${result.r2}</p>`;
+                }
+
+                document.getElementById("result").innerHTML = output;
+            }
+        });
+    </script>
+
+</body>
+</html>
